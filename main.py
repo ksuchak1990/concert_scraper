@@ -2,7 +2,6 @@ import requests
 import json
 from math import ceil
 from time import sleep
-from html.parser import HTMLParser
 
 baseURL = 'https://www.songkick.com/metro_areas/24495-uk-leeds'
 queryURL = 'https://www.songkick.com/metro_areas/24495-uk-leeds?page={0}'
@@ -63,14 +62,33 @@ for page in sourceCodeList:
     eventsJSONList = [restrict(x, end='</script>') for x in eventsCodeList]
     eventsList.extend(eventsJSONList)
 
-# For each event get event metadata
-def getEventMetadata(EJS):
-    event = json.loads(EJS)
+# Parsing functions
+def getArtist(eventDict):
+    return eventDict['name']
+
+def getSupport(eventDict, headliner):
+    artists = eventDict['performer']
+    support = [d['name'] for d in artists if d['name'] != headliner] if len(artists) > 1 else ''
+    return support
+
+def getDate(eventDict):
+    dateTime = eventDict['startDate']
+    date = restrict(dateTime, end='T') if 'T' in dateTime else dateTime
+    return date
+
+def getVenue(eventDict):
+    return eventDict['location']['name']
+
+def getEventMetadata(eventJSON):
+    eventDict = json.loads(eventJSON)[0]
+    event = {'Artist': getArtist(eventDict),
+                'Date': getDate(eventDict),
+                'Venue': getVenue(eventDict)}
+    event['Support'] = getSupport(eventDict, event['Artist'])
     return event
 
+# Parse events
 eventsMetaDataList = list()
 for event in eventsList:
     eventMetadata = getEventMetadata(event)
     eventsMetaDataList.append(eventMetadata)
-    print(type(eventMetadata), len(eventMetadata))
-    break
