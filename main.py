@@ -16,23 +16,23 @@ class Worker():
         self.baseDir = 'output'
 
     def work(self):
+        print('working on product: {0}'.format(self.product))
         self.initialChecks()
 
-        print(self.stageList)
-
         for i, stage in enumerate(self.stageList):
+            print('Starting {0}'.format(stage))
             if i != 0:
                 inputData = self.pickUp('{0}/{1}/{2}.json'.format(self.baseDir, self.product, self.stageList[i-1]))
                 outputData = self.stageDict[stage](inputData)
-                self.putDown(outputData, '{0}/{1}/{2}.json'.format(self.baseDir, self.product, stage))
             else:
                 outputData = self.stageDict[stage]()
-                self.putDown(outputData, '{0}/{1}/{2}.json'.format(self.baseDir, self.product, stage))
+            self.putDown(outputData, '{0}/{1}/{2}.json'.format(self.baseDir, self.product, stage))
+            print('Completed {0}'.format(stage))
 
     # ensure that relevant output directories exist
     def initialChecks(self):
         outputPath = './{0}/{1}'.format(self.baseDir, self.product) if self.product != 'generic' else self.baseDir
-        if not os.path.exists(outputPath):
+        if outputPath and not os.path.exists(outputPath):
             os.makedirs(outputPath)
 
     # get data from previous stage
@@ -71,7 +71,7 @@ class WebWorker(Worker):
         return(inputString[startIndex:endIndex])
 
 class SongKickWorker(WebWorker):
-    """worker to grab the CDRC info, process it, and output it"""
+    """worker to grab the info from SongKick, process it, and output it"""
     def __init__(self):
         super().__init__()
 
@@ -109,8 +109,6 @@ class SongKickWorker(WebWorker):
             sourceCodeList.append(sourceCode)
             sleep(0.5)
 
-        # print('Listings contain {0} concerts over {1} pages'.format(numberOfConcerts, len(sourceCodeList)))
-
         return sourceCodeList
 
     def parseCatalogue(self, sourceCodeList):
@@ -141,12 +139,22 @@ class SongKickWorker(WebWorker):
     def getVenue(self, eventDict):
         return eventDict['location']['name']
 
+    def makeEventID(self, event):
+        # replacementList = ['and', 'the', '&']
+        # e = event.copy()
+        # for k, v in e.items():
+
+        #     value = 
+        #     e[k] = v
+        return '___'.join([event['Artist'].replace(' ', '_'), event['Date'], event['Venue'].replace(' ', '_')])
+
     def getEventMetadata(self, eventJSON):
         eventDict = json.loads(eventJSON)[0]
         event = {'Artist': self.getArtist(eventDict),
                     'Date': self.getDate(eventDict),
                     'Venue': self.getVenue(eventDict)}
         event['Support'] = self.getSupport(eventDict, event['Artist'])
+        event['EventID'] = self.makeEventID(event)
         return event
 
     def parseEvents(self, eventsList):
@@ -156,5 +164,30 @@ class SongKickWorker(WebWorker):
             eventsMetaDataList.append(eventMetadata)
         return eventsMetaDataList
 
+# class GoogleSheetsWorker(Worker):
+#     def __init__(self):
+#         super().__init__()
+
+#         self.product = 'none'
+
+#         # Stages
+#         self.stageList = ['readData', 'processData', 'writeData']
+#         self.stageDict = {'readData': self.readData,
+#                             'processData': self.readData,
+#                             'writeData': self.writeData}
+
+#     def readData(self):
+#         pass
+
+#     def processData(self, data):
+#         pass
+
+#     def writeData(self, data):
+#         pass
+
+# Running
 s = SongKickWorker()
 s.work()
+
+# g = GoogleSheetsWorker()
+# g.work()
