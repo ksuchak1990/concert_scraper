@@ -102,3 +102,6 @@ ENV/
 
 # output files
 output/
+
+# GSheets files
+client_secret.json
