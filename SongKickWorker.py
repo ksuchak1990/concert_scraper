@@ -1,5 +1,7 @@
 # Imports
 import json
+import genres
+import wikipedia as wiki
 from time import sleep
 from math import ceil
 from WebWorker import WebWorker
@@ -14,11 +16,13 @@ class SongKickWorker(WebWorker):
 
         # Stages
         self.stageList = ['makeCatalogue', 'downloadCatalogue', 
-'parseCatalogue', 'parseEvents']
+                            'parseCatalogue', 'parseEvents', 
+                            'supplementMetadata']
         self.stageDict = {'makeCatalogue': self.makeCatalogue, 
                             'downloadCatalogue': self.downloadCatalogue,
                             'parseCatalogue': self.parseCatalogue,
-                            'parseEvents': self.parseEvents}
+                            'parseEvents': self.parseEvents,
+                            'supplementMetadata': self.supplementMetadata}
 
         # Info
         self.baseURL = 'https://www.songkick.com/metro_areas/24495-uk-leeds'
@@ -29,13 +33,11 @@ class SongKickWorker(WebWorker):
         baseURLCode = self.requestURL(self.baseURL)
 
         # Calculate number of pages
-        numberOfConcerts = self.restrict(inputString=baseURLCode, 
-startStr='upcoming-concerts-count"><b>', endStr='</b>')
+        numberOfConcerts = self.restrict(inputString=baseURLCode, startStr='upcoming-concerts-count"><b>', endStr='</b>')
         numberOfPages = ceil(int(numberOfConcerts) / self.RESULTS_PER_PAGE)
 
         # For each page, get source
-        queryURLList = [self.queryURL.format(str(i)) for i in range(1, 
-numberOfPages)]
+        queryURLList = [self.queryURL.format(str(i)) for i in range(1, numberOfPages)]
         return queryURLList
 
 
@@ -55,8 +57,7 @@ numberOfPages)]
         for page in sourceCodeList:
             events = self.restrict(inputString=page, startStr='<div class="component events-summary" id="event-listings">', endStr='<div class="pagination">')
             eventsCodeList = events.split('<script type="application/ld+json">')[1:]
-            eventsJSONList = [self.restrict(x, endStr='</script>') for x in 
-eventsCodeList]
+            eventsJSONList = [self.restrict(x, endStr='</script>') for x in eventsCodeList]
             eventsList.extend(eventsJSONList)
 
         return eventsList
@@ -102,3 +103,34 @@ eventsCodeList]
             eventMetadata = self.getEventMetadata(event)
             eventsMetaDataList.append(eventMetadata)
         return eventsMetaDataList
+
+    def getGenre(self, page, artist):
+        if '<th scope="row">Genres</th>' not in page:
+            return None
+        else:
+            print('running {0}'.format(artist))
+            genreSection = self.restrict(inputString=page, startStr='<th scope="row">Genres</th>', endStr='<tr>')
+            # if '</a>' not in genreSection:
+            #     print('fail 2')
+            genreCodeList = genreSection.split('</a>')
+            print(artist, genreCodeList)
+            genres = [self.restrict(inputString=x.lower(), startStr='title="', endStr='">') for x in genreCodeList if 'itle=' in x]
+            return genres
+
+    def addWikipediaGenres(self, event):
+        d = event.copy()
+        try:
+            page =  wiki.page(d['Artist'], auto_suggest=False).html()
+        except:
+            page = ''
+            print('unable to find wikipedia page for {0}'.format(d['Artist']))
+        if len(page) != 0:
+            d['Genres'] = self.getGenre(page, d['Artist'])
+        return d
+
+    def supplementMetadata(self, eventsList):
+        outputList = list()
+        for event in eventsList:
+            supplementedEvent = self.addWikipediaGenres(event)
+            outputList.append(supplementedEvent)
+        return outputList
