@@ -23,5 +23,6 @@ class WebWorker(Worker):
             raise TypeError('inputString must be a string')
 
         startIndex = inputString.index(startStr) + len(startStr) if startStr else 0
-        endIndex = inputString.index(endStr) if endStr else len(inputString)
-        return(inputString[startIndex:endIndex])
+        reducedStr = inputString[startIndex:]
+        endIndex = reducedStr.index(endStr) if endStr else len(reducedStr)
+        return(reducedStr[:endIndex])
