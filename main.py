@@ -1,10 +1,10 @@
 # Imports
 from SongKickWorker import SongKickWorker
-from GoogleSheetsWorker import GoogleSheetsWorker
+from FileWriteWorker import FileWriteWorker
 
 # Running
-s = SongKickWorker()
-s.work(start='makeCatalogue', end='supplementMetadata')
+# s = SongKickWorker()
+# s.work(start='makeCatalogue', end='supplementMetadata')
 
-# g = GoogleSheetsWorker()
-# g.work()
+fw = FileWriteWorker()
+fw.work(start='importData', end='writeData')
