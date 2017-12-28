@@ -74,11 +74,6 @@ class Worker():
         with open(path, 'w') as outfile:
             json.dump(item, outfile)
 
-    # Write out csv data file
-    def putDownCSV(self, item, path):
-        print('Writing to {0}'.format(path))
-        with open(path, 'w') as outfile:
-            dataWriter = csv.DictWriter(outfile, fieldnames=item[0].keys())
-            dataWriter.writeheader()
-            dataWriter.writerows(item)
-
+    def dictKeyFilter(inputDict, keysToKeep):
+        return {k: v for k, v in inputDict.items() if k in keysToKeep}
+    
