@@ -115,19 +115,20 @@ class SongKickWorker(WebWorker):
         return '___'.join([date, venue, artist])
 
     def cleanUpArtist(self, artistString):
-        ## replace ' ' with '_'
-        ####### STUFF TO CLEAR UP CONFUSTION OVER SIMILAR BAND NAMES ######
-        #### I.E. EVENTS THAT HAVE THE SAME HEADLINER, BUT WITH VERY MINOR NAME DIFFERENCES ####
-        # replacementList = ['and', 'the', '&']
-        # e = event.copy()
-        # for k, v in e.items():
+        artist = artistString.lower()
+        # Dealing with 'and' vs '&''
+        artist = artist.replace('&', 'and')
 
-        #     value = 
-        #     e[k] = v
-        pass
+        # Dealing with leading 'the'
+        artist = self.prefixStrip(artist, 'the ')
 
-    def normalise(self, inputString):
-        return inputString.lower().strip().replace(' ', '_')
+        # Normalising
+        artist = self.normalise(artist)
+
+        if artist != artistString:
+            print(artistString, artist)
+
+        return artist
 
     def getEventMetadata(self, eventJSON):
         eventDict = json.loads(eventJSON)[0]
