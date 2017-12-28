@@ -26,3 +26,9 @@ class WebWorker(Worker):
         reducedStr = inputString[startIndex:]
         endIndex = reducedStr.index(endStr) if endStr else len(reducedStr)
         return(reducedStr[:endIndex])
+
+    def normalise(self, inputString):
+        return inputString.lower().strip().replace(' ', '_')
+
+    def prefixStrip(self, inputString, prefix):
+        return inputString[len(prefix):] if inputString.startswith(prefix) else inputString
