@@ -38,6 +38,7 @@ class SongKickWorker(WebWorker):
         # Calculate number of pages
         numberOfConcerts = self.restrict(inputString=baseURLCode, startStr='upcoming-concerts-count"><b>', endStr='</b>')
         numberOfPages = ceil(int(numberOfConcerts) / self.RESULTS_PER_PAGE)
+        print('Catalogue is made up of {0} concerts over {1} pages'.format(numberOfConcerts, numberOfPages))
 
         # For each page, get source
         queryURLList = [self.queryURL.format(str(i)) for i in range(1, numberOfPages)]
@@ -79,9 +80,6 @@ class SongKickWorker(WebWorker):
         # Construct list of dicts from dict of dicts
         eventsMetadataList = [v for k, v in eventsMetadataDict.items()]
 
-        for event in eventsMetadataList:
-            if not isinstance(event, dict):
-                raise TypeError('event is of type {}'.format(type(event)))
         return eventsMetadataList
 
     def supplementMetadata(self, eventsList):
@@ -92,6 +90,16 @@ class SongKickWorker(WebWorker):
         return outputList
 
     # Auxilliary parsing functions
+    def getEventMetadata(self, eventJSON):
+        eventDict = json.loads(eventJSON)[0]
+        event = {'Artist': self.getArtist(eventDict),
+                    'Date': self.getDate(eventDict),
+                    'Venue': self.getVenue(eventDict),
+                    'Coordinates': self.getCoordinates(eventDict)}
+        event['Support'] = self.getSupport(eventDict, event['Artist'])
+        event['EventID'] = self.makeEventID(event)
+        return event
+
     def getArtist(self, eventDict):
         return eventDict['name']
 
@@ -107,6 +115,13 @@ class SongKickWorker(WebWorker):
 
     def getVenue(self, eventDict):
         return eventDict['location']['name']
+
+    def getCoordinates(self, eventDict):
+        locationDict = eventDict['location']
+        if 'geo' in locationDict:
+            return locationDict['geo']
+        else:
+            return dict()
 
     def makeEventID(self, event):
         artist = self.cleanUpArtist(event['Artist'])
@@ -125,19 +140,7 @@ class SongKickWorker(WebWorker):
         # Normalising
         artist = self.normalise(artist)
 
-        if artist != artistString:
-            print(artistString, artist)
-
         return artist
-
-    def getEventMetadata(self, eventJSON):
-        eventDict = json.loads(eventJSON)[0]
-        event = {'Artist': self.getArtist(eventDict),
-                    'Date': self.getDate(eventDict),
-                    'Venue': self.getVenue(eventDict)}
-        event['Support'] = self.getSupport(eventDict, event['Artist'])
-        event['EventID'] = self.makeEventID(event)
-        return event
 
     def consolidateEvents(self, newEvent, oldEvent):
         # As it stands, this function only consolidates the supports,
@@ -147,7 +150,8 @@ class SongKickWorker(WebWorker):
         outputEvent = {'EventID': oldEvent['EventID'],
                         'Artist': oldEvent['Artist'],
                         'Date': oldEvent['Date'],
-                        'Venue': oldEvent['Venue']}
+                        'Venue': oldEvent['Venue'],
+                        'Coordinates': oldEvent['Coordinates']}
 
         # get keys to be added
         keys = {key for key in oldEvent if key not in outputEvent}
@@ -163,7 +167,6 @@ class SongKickWorker(WebWorker):
         return outputEvent
 
     def addWikipediaGenres(self, event):
-        print(event)
         d = event.copy()
         try:
             page =  wiki.page(d['Artist'], auto_suggest=False).html()
@@ -179,7 +182,7 @@ class SongKickWorker(WebWorker):
             print('No genres available for {0}'.format(artist))
             return None
         else:
-            print('running {0}'.format(artist))
+            print('Collecting genres for {0}'.format(artist))
             genreSection = self.restrict(inputString=page, startStr='<th scope="row">Genres</th>', endStr='<tr>')
             genreCodeList = genreSection.split('</a>')
             genres = [self.restrict(inputString=x.lower(), startStr='title="', endStr='">') for x in genreCodeList if 'itle=' in x]
