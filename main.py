@@ -4,7 +4,7 @@ from GoogleSheetsWorker import GoogleSheetsWorker
 
 # Running
 s = SongKickWorker()
-s.work()
+s.work(start='makeCatalogue', end='supplementMetadata')
 
 # g = GoogleSheetsWorker()
 # g.work()
