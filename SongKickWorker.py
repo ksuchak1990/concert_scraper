@@ -109,6 +109,13 @@ class SongKickWorker(WebWorker):
         return eventDict['location']['name']
 
     def makeEventID(self, event):
+        artist = self.cleanUpArtist(event['Artist'])
+        date = self.normalise(event['Date'])
+        venue = self.normalise(event['Venue'])
+        return '___'.join([date, venue, artist])
+
+    def cleanUpArtist(self, artistString):
+        ## replace ' ' with '_'
         ####### STUFF TO CLEAR UP CONFUSTION OVER SIMILAR BAND NAMES ######
         #### I.E. EVENTS THAT HAVE THE SAME HEADLINER, BUT WITH VERY MINOR NAME DIFFERENCES ####
         # replacementList = ['and', 'the', '&']
@@ -117,7 +124,10 @@ class SongKickWorker(WebWorker):
 
         #     value = 
         #     e[k] = v
-        return '___'.join([event['Artist'].replace(' ', '_'), event['Date'], event['Venue'].replace(' ', '_')])
+        pass
+
+    def normalise(self, inputString):
+        return inputString.lower().strip().replace(' ', '_')
 
     def getEventMetadata(self, eventJSON):
         eventDict = json.loads(eventJSON)[0]
