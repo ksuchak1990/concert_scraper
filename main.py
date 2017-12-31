@@ -1,7 +1,8 @@
 # Imports
-from SongKickWorker import SongKickWorker
-from FileWriteWorker import FileWriteWorker
-from DataAnalysisWorker import DataAnalysisWorker
+import sys
+sys.path.append('./Workers')
+from Workers import SongKickWorker, FileWriteWorker, DataAnalysisWorker
+
 
 # Running
 # s = SongKickWorker()
