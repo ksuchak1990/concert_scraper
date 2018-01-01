@@ -3,7 +3,6 @@ import sys
 sys.path.append('./Workers')
 from Workers import SongKickWorker, FileWriteWorker, DataAnalysisWorker
 
-
 # Running
 # s = SongKickWorker()
 # s.work(start='makeCatalogue', end='supplementMetadata')
