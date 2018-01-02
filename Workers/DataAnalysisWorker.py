@@ -21,13 +21,16 @@ class DataAnalysisWorker(Worker):
         self.figPath = './output/visualisations/{0}.png'
 
     def importData(self):
+        """Getting data that has been produced by the SongKickWorker."""
         eventList = self.pickUp(self.eventPath)
         return eventList
 
     def makeFigures(self, eventList):
+        """Producing figures to show trends in the concert data."""
         # Make dataframe
         df = pd.DataFrame(eventList)
 
+        # Convert dateStr to datetime format
         for index, row in df.iterrows():
             row['Date'] = dt.date(pd.to_datetime(row['Date']))
 
@@ -38,7 +41,9 @@ class DataAnalysisWorker(Worker):
 
         return 'See figures.'
 
-    def plotDates(self, data, numberOfDays=60):
+    # Auxiliary plotting functions
+    def plotDates(self, data, numberOfDays=60, threshold=6):
+        """Plot showing how total number of concerts in Leeds varies by date."""
         # Transform data
         rawData = data.groupby('Date').count()
         restrictedData = rawData[:numberOfDays]
@@ -47,7 +52,7 @@ class DataAnalysisWorker(Worker):
         colours = list()
         count = 0
         for index, row in restrictedData.iterrows():
-            colour = 'darkred' if row['EventID'] > 6 else 'navy'
+            colour = 'darkred' if row['EventID'] > threshold else 'navy'
             count += row['EventID']
             colours.append(colour)
 
@@ -61,6 +66,8 @@ class DataAnalysisWorker(Worker):
         plt.savefig(self.figPath.format('dates'))
 
     def plotVenues(self, data, numberOfVenues=10):
+        """Plot showing how the number of concerts varies across 
+        different venues in Leeds."""
         # Transform data
         m = data.Venue.value_counts()[:numberOfVenues]
 
@@ -74,7 +81,7 @@ class DataAnalysisWorker(Worker):
         return list(m.index.values)
 
     def plotVenueGenres(self, data, venues, genreThreshold=2, venueThreshold=10):
-        # Look at what genres are popular at each venue
+        """Plot showing how the genres of concerts varies across different venues."""
         # Create a dict of form:
         #   {venue1: {genre1: count1, genre2: count2...}, venue2:...}
         # for the top venues found in self.plotVenues()
@@ -82,7 +89,8 @@ class DataAnalysisWorker(Worker):
         venueDict = self.makeVenueGenresDict(data, venues)
 
         # Reduce further by filtering for when there's enough occurrence of a genre at that venue
-        reducedVenueDict = self.makeReducedVenueDict(venueDict, venues, genreThreshold, venueThreshold)
+        reducedVenueDict = self.makeReducedVenueDict(venueDict, venues, 
+            genreThreshold, venueThreshold)
 
         # Plot
         plt.rcParams["figure.figsize"] = [10, 10]
@@ -98,9 +106,15 @@ class DataAnalysisWorker(Worker):
         plt.tight_layout()
         plt.savefig(self.figPath.format('venueGenres'))
 
+    # Auxiliary venue-genre functions
     def makeVenueGenresDict(self, data, venues):
+        """Make a dict of venues, for each of which the value is a dict of the 
+        counts of how many concerts at that venue fall under a particular genre.
+        This is simplified by try to generalise sub-genres of metal, punk, rock
+        and pop to their aforementioned umbrella genres."""
         genreList = ['metal', 'punk', 'rock', 'pop']
         venueDict = dict()
+        # Filter down to the venues found when plotting the venues
         reducedData = data[data['Venue'].isin(venues)]
         for index, row in reducedData.iterrows():
             v = row['Venue']
@@ -110,11 +124,14 @@ class DataAnalysisWorker(Worker):
             if isinstance(g, list):
                 for genre in g:
                     newGenre = 'other'
+                    # Try to capture the genre in a generalisation
                     for generalisation in genreList:
                         if generalisation in genre:
                             newGenre = generalisation
                             break
+                    # Clean up whatever we have
                     cleanGenre = self.cleanUpGenre(newGenre)
+
                     if cleanGenre not in venueDict[v]:
                         venueDict[v][cleanGenre] = 1
                     else:
@@ -123,6 +140,9 @@ class DataAnalysisWorker(Worker):
         return venueDict
 
     def makeReducedVenueDict(self, venueDict, venues, genreThreshold, venueThreshold):
+        """Filter the venueDict down to venues that meet the requisite threshold
+        of concerts at that venue, and to genres that meet the requisite threshold
+        of concerts that fall under that genre at the venue."""
         reducedVenueDict = dict()
         for venue in venues:
             tempDict = dict()
