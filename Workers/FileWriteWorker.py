@@ -45,4 +45,3 @@ class FileWriteWorker(Worker):
             dataWriter = csv.DictWriter(outfile, fieldnames=self.headers)
             dataWriter.writeheader()
             dataWriter.writerows(sortedList)
-

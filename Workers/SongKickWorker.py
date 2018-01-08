@@ -42,10 +42,11 @@ class SongKickWorker(WebWorker):
 
         # Calculate number of pages
         numberOfConcerts = self.restrict(inputString=baseURLCode, 
-            startStr='upcoming-concerts-count"><b>', endStr='</b>')
+                                        startStr='upcoming-concerts-count"><b>', 
+                                        endStr='</b>')
         numberOfPages = ceil(int(numberOfConcerts) / self.RESULTS_PER_PAGE)
         print('Catalogue is made up of {0} concerts over {1} pages'.format(numberOfConcerts, 
-            numberOfPages))
+                numberOfPages))
 
         # For each page, get source
         queryURLList = [self.queryURL.format(str(i)) for i in range(1, numberOfPages)]
@@ -87,7 +88,7 @@ class SongKickWorker(WebWorker):
             if eventID in eventsMetadataDict:
                 oldEventMetadata = eventsMetadataDict[eventID].copy()
                 eventsMetadataDict[eventID] = self.consolidateEvents(eventMetadata, 
-                    oldEventMetadata)
+                                                        oldEventMetadata)
             else:
                 eventsMetadataDict[eventID] = eventMetadata
         # Construct list of dicts from dict of dicts
@@ -109,7 +110,7 @@ class SongKickWorker(WebWorker):
         # Get wikipedia genres relating to each artist
         # Use set so we don't look up same artist multiple times
         for artist in artistSet:
-            genreDict = self.getWikipediaGenres(artist)
+            genreDict[artist] = self.getWikipediaGenres(artist)
 
         # Add genres to events
         for event in eventsList:
@@ -118,7 +119,7 @@ class SongKickWorker(WebWorker):
             outputList.append(supplementedEvent)
         return outputList
 
-    # Auxilliary event parsing functions
+    # Auxiliary event parsing functions
     def getEventMetadata(self, eventJSON):
         eventDict = json.loads(eventJSON)[0]
         event = {'Artist': self.getArtist(eventDict),
@@ -224,9 +225,9 @@ class SongKickWorker(WebWorker):
         else:
             print('Collecting genres for {0}'.format(artist))
             genreSection = self.restrict(inputString=page, 
-                            startStr='<th scope="row">Genres</th>', endStr='<tr>')
+                                        startStr='<th scope="row">Genres</th>', 
+                                        endStr='<tr>')
             genreCodeList = genreSection.split('</a>')
             genres = [self.restrict(inputString=x.lower(), startStr='title="', endStr='">') 
                         for x in genreCodeList if 'itle=' in x]
             return genres
-

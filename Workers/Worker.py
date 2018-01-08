@@ -35,12 +35,12 @@ class Worker():
                 # There is nothing for stage 0 to pick up, because no stage precedes it
                 if i != 0:
                     inputData = self.pickUp('{0}/{1}/{2}.json'.format(self.baseDir, 
-                        self.product, self.stageList[i-1]))
+                                            self.product, self.stageList[i-1]))
                     outputData = self.stageDict[stage](inputData)
                 else:
                     outputData = self.stageDict[stage]()
                 self.putDown(outputData, '{0}/{1}/{2}.json'.format(self.baseDir, 
-                    self.product, stage))
+                                self.product, stage))
                 print('Completed {0}'.format(stage))
 
     def initialChecks(self):
