@@ -21,12 +21,15 @@ class DataAnalysisWorker(Worker):
         self.figPath = './output/visualisations/{0}.png'
 
     def importData(self):
-        """Getting data that has been produced by the SongKickWorker."""
+        """Getting data that has been produced by the SongKickWorker.
+        :returns: list of event metadata dictionaries"""
         eventList = self.pickUp(self.eventPath)
         return eventList
 
     def makeFigures(self, eventList):
-        """Producing figures to show trends in the concert data."""
+        """Producing figures to show trends in the concert data.
+        :param eventList: list of event metadata dictionaries
+        :returns: string directing user to view output figures"""
         # Make dataframe
         df = pd.DataFrame(eventList)
 
@@ -43,7 +46,11 @@ class DataAnalysisWorker(Worker):
 
     # Auxiliary plotting functions
     def plotDates(self, data, numberOfDays=60, threshold=6):
-        """Plot showing how total number of concerts in Leeds varies by date."""
+        """Plot showing how total number of concerts in Leeds varies by date.
+        :param data: data to be plotted
+        :param numberOfDays: number of days into the future to be plotting
+        :param threshold: integer value demarcating busy vs quiet days
+        :returns: None"""
         # Transform data
         rawData = data.groupby('Date').count()
         restrictedData = rawData[:numberOfDays]
@@ -67,7 +74,10 @@ class DataAnalysisWorker(Worker):
 
     def plotVenues(self, data, numberOfVenues=10):
         """Plot showing how the number of concerts varies across 
-        different venues in Leeds."""
+        different venues in Leeds.
+        :param data: data to be plotted
+        :param numberOfVenues: number of venues to be plotted
+        :returns: list of indices of dataFrame rows that pertain to the selected venues"""
         # Transform data
         m = data.Venue.value_counts()[:numberOfVenues]
 
@@ -81,7 +91,13 @@ class DataAnalysisWorker(Worker):
         return list(m.index.values)
 
     def plotVenueGenres(self, data, venues, genreThreshold=2, venueThreshold=10):
-        """Plot showing how the genres of concerts varies across different venues."""
+        """Plot showing how the genres of concerts varies across different venues.
+        :param data: data to be plotted
+        :param venues: venues to be plotted
+        :param genreThreshold: minimum number of events for a genre to be included
+        :param venueThreshold: minimum number of events for a venue to be included
+        :returns: None"""
+
         # Create a dict of form:
         #   {venue1: {genre1: count1, genre2: count2...}, venue2:...}
         # for the top venues found in self.plotVenues()

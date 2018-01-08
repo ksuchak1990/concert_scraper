@@ -24,13 +24,16 @@ class FileWriteWorker(Worker):
         self.headers = ['Date', 'Venue', 'Artist', 'Genres', 'Support']
 
     def importData(self):
-        """Getting data that has been produced by the SongKickWorker."""
+        """Getting data that has been produced by the SongKickWorker.
+        :returns: list of event metadata dictionaries"""
         eventList = self.pickUp(self.eventPath)
         return eventList
 
     def organiseData(self, eventList):
         """Sorting the entries by the EventID, which acts as a proxy for
-        sorting by date, then venue, then artist."""
+        sorting by date, then venue, then artist.
+        :param eventList: list of event metadata dictionaries
+        :returns: list of dictionaries sorted based on EventID"""
         sortedList = sorted(eventList, key=lambda d: d['EventID'])
 
         # Filter down the event keys to those required
@@ -40,7 +43,9 @@ class FileWriteWorker(Worker):
         return outputList
 
     def writeData(self, sortedList):
-        """Write list of dicts to csv output file."""
+        """Write list of dicts to csv output file.
+        :param sortedList: list of event metadata dictionaries sorted based on EventID
+        :returns: None"""
         with open(self.outputPath, 'w') as outfile:
             dataWriter = csv.DictWriter(outfile, fieldnames=self.headers)
             dataWriter.writeheader()

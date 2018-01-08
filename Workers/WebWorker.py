@@ -10,7 +10,9 @@ class WebWorker(Worker):
 
     # Web functions
     def requestURL(self, inputString):
-        """Wrapper function for requesting a url."""
+        """Wrapper function for requesting a url.
+        :param inputString: url of webpage to be requested
+        :returns: html of requested webpage"""
         # Type-checking
         if not isinstance(inputString, str):
             raise TypeError('inputString must be a string') 
@@ -24,7 +26,11 @@ class WebWorker(Worker):
     # Text functions
     def restrict(self, inputString, startStr=None, endStr=None):
         """Useful text parsing function to get substrings,
-        based on substrings before an after."""
+        based on substrings before an after.
+        :param inputString: string to be stripped down
+        :param startStr: 
+        :param endStr: 
+        :returns: string that has been stripped down"""
         # Type-checking
         if not isinstance(inputString, str):
             raise TypeError('inputString must be a string')
@@ -35,9 +41,14 @@ class WebWorker(Worker):
         return(reducedStr[:endIndex])
 
     def normalise(self, inputString):
-        """String normalisation."""
+        """String normalisation.
+        :param inputString: string to be normalised
+        :returns: normalised string"""
         return inputString.lower().strip().replace(' ', '_')
 
     def prefixStrip(self, inputString, prefix):
-        """Check if string starts with substring, and then gets rid of it."""
+        """Check if string starts with substring, and then gets rid of it.
+        :param inputString: string to be stripped
+        :param prefix: substring to be stripped from the beginning of the inputString
+        :returns: stripped string"""
         return inputString[len(prefix):] if inputString.startswith(prefix) else inputString

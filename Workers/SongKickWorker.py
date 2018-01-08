@@ -37,7 +37,8 @@ class SongKickWorker(WebWorker):
 
     # Stage functions
     def makeCatalogue(self):
-        """Make a list of the pages to request."""
+        """Make a list of the pages to request.
+        :returns: list of URLs to be queried using requests"""
         baseURLCode = self.requestURL(self.baseURL)
 
         # Calculate number of pages
@@ -54,7 +55,9 @@ class SongKickWorker(WebWorker):
 
 
     def downloadCatalogue(self, queryURLList):
-        """Download the html for each of the urls."""
+        """Download the html for each of the urls.
+        :param quesryURLList: list of URLs to be queried
+        :returns: list of html source code for each URL"""
         sourceCodeList = list()
         for i, queryURL in enumerate(queryURLList):
             print('getting page {0}'.format(i))
@@ -65,7 +68,9 @@ class SongKickWorker(WebWorker):
         return sourceCodeList
 
     def parseCatalogue(self, sourceCodeList):
-        """For each source page, identify individual events."""
+        """For each source page, identify individual events.
+        :param sourceCodeList: list of html source code for each URL
+        :returns: list of substrings, each pertaining to individual events"""
         eventsList = list()
         for page in sourceCodeList:
             events = self.restrict(inputString=page, 
@@ -78,7 +83,9 @@ class SongKickWorker(WebWorker):
         return eventsList
 
     def parseEvents(self, eventsList):
-        """Parse each event to get the relevant event metadata."""
+        """Parse each event to get the relevant event metadata.
+        :param eventsList: list of strings, each pertaining to individual events
+        :returns: list of metadata dictionaries pertaining to individual events"""
         eventsMetadataDict = dict()
         for event in eventsList:
             eventMetadata = self.getEventMetadata(event)
@@ -102,7 +109,9 @@ class SongKickWorker(WebWorker):
                 - Get html for wikipedia page,
                 - Check if page holds artist genres - if yes:
                     - Get artist genres,
-                    - Attach genres to eventDict."""
+                    - Attach genres to eventDict.
+            :param eventList: list of basic metadata dictionaries
+            :returns: list of metadata dictionaries for events"""
         outputList = list()
         artistSet = {event['Artist'] for event in eventsList}
         genreDict = dict()

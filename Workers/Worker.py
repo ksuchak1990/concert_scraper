@@ -14,7 +14,10 @@ class Worker():
         self.baseDir = 'output'
 
     def work(self, start, end):
-        """Main function that gets each worker to do whatever work you ask of it."""
+        """Main function that gets each worker to do whatever work you ask of it.
+        :param start: start stage contained in the stageList, can be indexed by either int or str
+        :param end: end stage contained in the stageList, can be indexed by either int or str
+        :returns: None"""
         # Parameter checking
         first, last = self.stageChecks(firstStage=start, lastStage=end)
 
@@ -44,13 +47,17 @@ class Worker():
                 print('Completed {0}'.format(stage))
 
     def initialChecks(self):
-        """Ensure that relevant output directories exist."""
+        """Ensure that relevant output directories exist.
+        :returns: None"""
         outputPath = './{0}/{1}'.format(self.baseDir, self.product) if self.product != 'generic' else self.baseDir
         if outputPath and not os.path.exists(outputPath):
             os.makedirs(outputPath)
 
     def stageChecks(self, firstStage, lastStage):
-        """Get the indices of the start and end stages in stageList."""
+        """Get the indices of the start and end stages in stageList.
+        :param firstStage: start stage contained in the stageList, can be indexed by either int or str
+        :param lastStage: end stage contained in the stageList, can be indexed by either int or str
+        :returns: indices of first and last stages in stageList"""
         # Type-checking - parameters should both be keys or ints
         if type(firstStage) != type(lastStage):
             raise TypeError('Stage types do not match.')
@@ -72,16 +79,24 @@ class Worker():
         return first, last
 
     def pickUp(self, path):
-        """Read data from previous stage."""
+        """Read data from previous stage.
+        :param path: path from which data is read, str
+        :returns: data contain in file at provided path"""
         with open(path) as infile:
             item = json.load(infile)
         return item
 
     def putDown(self, item, path):
-        """Write output data at end of stage."""
+        """Write output data at end of stage.
+        :param item: data to be written
+        :param path: path to which data is written, str
+        :returns: None"""
         with open(path, 'w') as outfile:
             json.dump(item, outfile)
 
     def dictKeyFilter(self, inputDict, keysToKeep):
-        """Filter down a dict to only the keys that we want."""
+        """Filter down a dict to only the keys that we want.
+        :param inputDict: dictionary to be filtered down
+        :param keysToKeep: keys desired in the returned dictionary
+        :returns: filtered down dictionary"""
         return {k: v for k, v in inputDict.items() if k in keysToKeep}
