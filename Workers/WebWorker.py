@@ -52,3 +52,7 @@ class WebWorker(Worker):
         :param prefix: substring to be stripped from the beginning of the inputString
         :returns: stripped string"""
         return inputString[len(prefix):] if inputString.startswith(prefix) else inputString
+
+    def getEditDistance(self, string1, string2, m, n):
+        # https://www.geeksforgeeks.org/dynamic-programming-set-5-edit-distance/
+        pass
