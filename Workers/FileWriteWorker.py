@@ -38,7 +38,7 @@ class FileWriteWorker(Worker):
 
         # Filter down the event keys to those required
         outputList = list()
-        for event in eventList:
+        for event in sortedList:
             outputList.append(self.dictKeyFilter(event, self.headers))
         return outputList
 
@@ -47,6 +47,6 @@ class FileWriteWorker(Worker):
         :param sortedList: list of event metadata dictionaries sorted based on EventID
         :returns: None"""
         with open(self.outputPath, 'w') as outfile:
-            dataWriter = csv.DictWriter(outfile, fieldnames=self.headers)
+            dataWriter = csv.DictWriter(outfile, fieldnames=self.headers, lineterminator='\n')
             dataWriter.writeheader()
             dataWriter.writerows(sortedList)
