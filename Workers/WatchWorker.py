@@ -14,9 +14,9 @@ class WatchWorker(Worker):
 
         # Stages
         self.stageList = ['importData',
-                            'getEventsByGenre']
+                            'checkWatchlists']
         self.stageDict = {'importData': self.importData,
-                            'getEventsByGenre': self.getEventsByGenre}
+                            'checkWatchlists': self.checkWatchlists}
 
         # Paths
         self.eventPath = './output/concerts/supplementMetadata.json'
@@ -33,19 +33,16 @@ class WatchWorker(Worker):
         eventList = self.pickUp(self.eventPath)
         return eventList
 
-    def getEventsByGenre(self, eventList):
-        genreDict = dict()
-        eventDict = {event['EventID']: event for event in eventList}
-        for genre in self.watchlists['genres']:
-            eventSet = set()
-            for event in eventList:                
-                if isinstance(event['Genres'], list):
-                    for eventGenre in event['Genres']:
-                        if genre in eventGenre:
-                            eventSet.add(event['EventID'])
-            genreList = [event for key, event in eventDict.items() if key in eventSet]
-            genreDict[genre] = genreList
-        return genreDict
+    def checkWatchlists(self, eventList):
+        checkerDict = {'genres': self.checkGenreList,
+                        'artists': self.checkArtistList}
+
+        outputDict = dict()
+
+        for field, checker in checkerDict.items():
+            outputDict[field] = checker(eventList, self.watchlists[field])
+
+        return outputDict
 
     # Auxiliary methods
     def readWatchlists(self):
@@ -65,3 +62,19 @@ class WatchWorker(Worker):
                     watchSet.add(item)
         return watchSet
 
+    def checkGenreList(self, eventList, watchlist):
+        genreDict = dict()
+        eventDict = {event['EventID']: event for event in eventList}
+        for genre in watchlist:
+            eventSet = set()
+            for event in eventList:                
+                if isinstance(event['Genres'], list):
+                    for eventGenre in event['Genres']:
+                        if genre in eventGenre:
+                            eventSet.add(event['EventID'])
+            genreList = [event for key, event in eventDict.items() if key in eventSet]
+            genreDict[genre] = genreList
+        return genreDict
+
+    def checkArtistList(self, eventList, watchlist):
+        pass
