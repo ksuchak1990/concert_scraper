@@ -220,6 +220,9 @@ class SongKickWorker(WebWorker):
             page = ''
             # Consider implementing a way to let the user choose here
             print('Multiple entries found for {0}, none chosen'.format(artist))
+        except:
+            page = ''
+            print('Odd error. Explore later.')
 
         # Search for genres in wikipedia html if page found
         genres = self.getGenre(page, artist) if page else None

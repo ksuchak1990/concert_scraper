@@ -1,17 +1,20 @@
 # Imports
 import sys
 sys.path.append('./Workers')
-from Workers import SongKickWorker, FileWriteWorker, DataAnalysisWorker
+from Workers import FileWriteWorker, DataAnalysisWorker, LIFFWorker
 
-# Running
+# # Running
 # s = SongKickWorker()
-# s.work(start='makeCatalogue', end='supplementMetadata')
+# s.work(start='supplementMetadata', end='supplementMetadata')
 
-fW = FileWriteWorker()
-fW.work(start='importData', end='writeData')
+l = LIFFWorker()
+l.work(start='downloadHome', end='makeEventURLs')
 
-dAW = DataAnalysisWorker()
-dAW.work(start='importData', end='makeFigures')
+# fW = FileWriteWorker()
+# fW.work(start='importData', end='writeData')
+
+# dAW = DataAnalysisWorker()
+# dAW.work(start='importData', end='makeFigures')
 
 # wW = WatchWorker()
 # wW.work(start='importData', end='checkWatchlists')

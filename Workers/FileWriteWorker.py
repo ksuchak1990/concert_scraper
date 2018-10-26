@@ -18,7 +18,7 @@ class FileWriteWorker(Worker):
                             'writeData': self.writeData}
 
         # Paths
-        self.eventPath = './output/concerts/supplementMetadata.json'
+        self.eventPath = './output/concerts/parseEvents.json'
         self.outputPath = './output/output_files/data.csv'
 
         self.headers = ['Date', 'Venue', 'Artist', 'Genres', 'Support']
@@ -46,7 +46,7 @@ class FileWriteWorker(Worker):
         """Write list of dicts to csv output file.
         :param sortedList: list of event metadata dictionaries sorted based on EventID
         :returns: None"""
-        with open(self.outputPath, 'w') as outfile:
+        with open(self.outputPath, 'w', encoding='utf8') as outfile:
             dataWriter = csv.DictWriter(outfile, fieldnames=self.headers, lineterminator='\n')
             dataWriter.writeheader()
             dataWriter.writerows(sortedList)
