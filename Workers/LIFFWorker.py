@@ -41,10 +41,14 @@ class LIFFWorker(WebWorker):
     def parseEvents(self, events):
         return [self.parseEvent(event) for event in events]
     
+    # Auxiliary functions
     def parseEvent(self, event):
-        pass
-    
-    def makeMetadata(self, source):
-        md = dict()
+        metadataList = ['length', 'rating', 'countries'
+                        'director', 'title', 'venue',
+                        'date', 'time']
+        metadata = dict()
+        
+        filmInfo = self.restrict(inputString=event, startStr='<section class="film-details">', endStr=' ')
 
-        return md
+
+    

@@ -1,17 +1,21 @@
+"""
+Main python script to run concert scraper.
+"""
+
 # Imports
 import sys
 sys.path.append('./Workers')
-from Workers import FileWriteWorker, DataAnalysisWorker, LIFFWorker
+from Workers import FileWriteWorker, DataAnalysisWorker, LIFFWorker, SongKickWorker
 
-# # Running
-# s = SongKickWorker()
-# s.work(start='supplementMetadata', end='supplementMetadata')
+# Running
+s = SongKickWorker()
+s.work(start='makeCatalogue', end='supplementMetadata')
 
-l = LIFFWorker()
-l.work(start='downloadHome', end='makeEventURLs')
+# l = LIFFWorker()
+# l.work(start='parseEvents', end='parseEvents')
 
-# fW = FileWriteWorker()
-# fW.work(start='importData', end='writeData')
+fW = FileWriteWorker()
+fW.work(start='importData', end='writeData')
 
 # dAW = DataAnalysisWorker()
 # dAW.work(start='importData', end='makeFigures')
